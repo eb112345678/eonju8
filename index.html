@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 대화 메이트 - 최적의 답변 솔루션</title>
+    <style>
+        :root {
+            --kakaotalk-yellow: #FEE500;
+            --kakaotalk-bg: #BACEE0;
+            --kakaotalk-chat-my: #FEE500;
+            --kakaotalk-chat-ai: #FFFFFF;
+            --text-main: #191919;
+            --text-sub: #666666;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 카카오톡 형태 앱 컨테이너 */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 90vh;
+            background-color: var(--kakaotalk-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #d0d0d0;
+        }
+
+        /* 헤더 */
+        .header {
+            background-color: #A9BDCE;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .profile-img {
+            width: 42px;
+            height: 42px;
+            background-color: var(--kakaotalk-yellow);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: #3C1E1E;
+        }
+
+        .header-info h2 {
+            font-size: 16px;
+            color: var(--text-main);
+        }
+
+        .header-info p {
+            font-size: 12px;
+            color: #555;
+        }
+
+        /* 메인 콘텐츠 / 채팅 영역 */
+        .chat-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* 말풍선 공통 */
+        .bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* AI 말풍선 */
+        .bubble-ai {
+            align-self: flex-start;
+            background-color: var(--kakaotalk-chat-ai);
+            color: var(--text-main);
+            border-top-left-radius: 2px;
+        }
+
+        /* 사용자 입력 폼 스타일 */
+        .input-card {
+            background: #fff;
+            padding: 18px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-sub);
+        }
+
+        .input-group textarea, .input-group input {
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            resize: none;
+        }
+
+        .input-group textarea:focus, .input-group input:focus {
+            border-color: #fbd300;
+        }
+
+        .btn-submit {
+            background-color: var(--kakaotalk-yellow);
+            color: #3C1E1E;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: #fada00;
+        }
+
+        /* 결과 카드리포트 */
+        .result-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .analysis-box {
+            background: #EBF3FA;
+            border-left: 4px solid #4A90E2;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #2C3E50;
+        }
+
+        .option-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+
+        .option-tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+        }
+
+        .tag-1 { background: #E3F2FD; color: #1976D2; }
+        .tag-2 { background: #FFEBEE; color: #D32F2F; }
+        .tag-3 { background: #E8F5E9; color: #388E3C; }
+        .tag-4 { background: #FFF3E0; color: #F57C00; }
+
+        .option-text {
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .btn-copy {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            float: right;
+        }
+
+        .btn-copy:hover {
+            background: #e9e9e9;
+        }
+
+        /* 하단 푸터 입력창 시뮬레이션 */
+        .footer-bar {
+            background: #ffffff;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .footer-input {
+            flex: 1;
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- 헤더 -->
+    <div class="header">
+        <div class="profile-img">AI</div>
+        <div class="header-info">
+            <h2>대화 솔루션 메이트</h2>
+            <p>상대방 분석 & 최적 대화 컨설팅</p>
+        </div>
+    </div>
+
+    <!-- 채팅 메인 영역 -->
+    <div class="chat-content" id="chatArea">
+        <!-- AI 환영 메시지 -->
+        <div class="bubble bubble-ai">
+            안녕하세요! 오늘 대화로 고민이 많으셨죠? <br>
+            상대방의 성격과 상황, 그리고 작성자님의 감정을 입력해주시면 상대의 속마음을 해석하고 <b>최적의 답안 4가지</b>를 추천해 드릴게요.
+        </div>
+
+        <!-- 입력 폼 카드 -->
+        <div class="input-card" id="inputSection">
+            <div class="input-group">
+                <label>1. 상대방 성격 및 가치관</label>
+                <input type="text" id="persona" placeholder="예: 회피형, 자존심이 셈, 직관적인 표현 선호">
+            </div>
+            <div class="input-group">
+                <label>2. 오늘 발생한 일 & 주고받은 말</label>
+                <textarea id="context" rows="3" placeholder="예: 약속시간에 20분 늦어서 '왜 늦었어?' 했더니 '차가 밀려서 어쩔 수 없었어' 하고 퉁명스럽게 말함"></textarea>
+            </div>
+            <div class="input-group">
+                <label>3. 현재 나의 감정 상태</label>
+                <input type="text" id="emotion" placeholder="예: 서운함, 나를 무시하는 것 같아서 화남">
+            </div>
+            <button class="btn-submit" onclick="generateSolutions()">최적의 대화 답안 받기</button>
+        </div>
+
+        <!-- 결과가 출력될 영역 -->
+        <div class="result-container" id="resultArea" style="display: none;">
+            <!-- 상대방 심리 분석 -->
+            <div class="analysis-box">
+                🔍 <b>상대방 속마음 해석</b><br>
+                <span id="analysisText">상대방은 변명이라기보다 상황 자체에 대한 스트레스가 높은 상태입니다. 자존심이 센 성향 때문에 자신의 잘못을 즉시 인정하기보다 정당화하려는 심리가 작용했습니다.</span>
+            </div>
+
+            <!-- 답안 4가지 -->
+            <div class="option-card">
+                <span class="option-tag tag-1">1. 공감 우선형 (관계 유지)</span>
+                <p class="option-text" id="opt1">"차가 많이 밀려서 오느라 고생했어. 그래도 기다리는 동안 좀 서운했어서 다음에 미리 말해주면 좋겠어!"</p>
+                <button class="btn-copy" onclick="copyText('opt1')">복사</button>
+            </div>
+
+            <div class="option-card">
+                <span class="option-tag tag-2">2. 단도직입형 (의사 명확화)</span>
+                <p class="option-text" id="opt2">"차가 밀린 건 이해하지만, 퉁명스러운 태도 때문에 내 기분도 상했어. 서로 기분 좋게 보자."</p>
+                <button class="btn-copy" onclick="copyText('opt2')">복사</button>
+            </div>
+
+            <div class="option-card">
+                <span class="option-tag tag-3">3. 쿠션어형 (분위기 완화)</span>
+                <p class="option-text" id="opt3">"오늘 길 진짜 많이 막혔나 보네! 오느라 애썼어. 우선 맛있는 거 먹으면서 기분 풀자."</p>
+                <button class="btn-copy" onclick="copyText('opt3')">복사</button>
+            </div>
+
+            <div class="option-card">
+                <span class="option-tag tag-4">4. 위트/기분 전환형</span>
+                <p class="option-text" id="opt4">"다음엔 차 밀릴 때 미리 텔레파시라도 보내줘! 일단 매콤한 거 먹으러 가자!"</p>
+                <button class="btn-copy" onclick="copyText('opt4')">복사</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 입력창 시뮬레이션 -->
+    <div class="footer-bar">
+        <input type="text" class="footer-input" placeholder="상황을 추가하거나 질의해 보세요..." readonly>
+    </div>
+</div>
+
+<script>
+    function generateSolutions() {
+        const persona = document.getElementById('persona').value;
+        const context = document.getElementById('context').value;
+        const emotion = document.getElementById('emotion').value;
+
+        if (!persona || !context || !emotion) {
+            alert('모든 입력 항목을 채워주세요!');
+            return;
+        }
+
+        // 결과 영역 표시 및 스크롤 이동
+        const resultArea = document.getElementById('resultArea');
+        resultArea.style.display = 'flex';
+        
+        // 채팅창 아래로 스크롤
+        const chatArea = document.getElementById('chatArea');
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function copyText(id) {
+        const text = document.getElementById(id).innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert('답장이 복사되었습니다!');
+        });
+    }
+</script>
+
+</body>
+</html>
